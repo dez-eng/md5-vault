@@ -1,0 +1,14 @@
+# 统一 LF，避免 Windows 工作区里的 CRLF 进镜像（start.sh 尤其致命）
+* text=auto eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.php text eol=lf
+*.css text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.png binary
+*.jpg binary
+*.zip binary
+*.gz binary

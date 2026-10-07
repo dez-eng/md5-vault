@@ -1,0 +1,10 @@
+# 本地测试：docker compose up -d --build
+services:
+  web:
+    build: .
+    container_name: md5_vault_web
+    ports:
+      - "8082:80"
+    environment:
+      - FLAG=flag{md5_lo0se_c0mpare_0e_byp4ss}
+    restart: unless-stopped

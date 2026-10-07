@@ -1,0 +1,8 @@
+.git
+.gitignore
+.gitattributes
+*.zip
+*.tar.gz
+docker-compose.yml
+README.md
+WRITEUP.md
