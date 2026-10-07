@@ -141,19 +141,21 @@ docker logs md5_vault        # 看到 "[keyvault] Flag 已就绪（来源：FLAG
 | --- | --- |
 | 挑战类型 | Dynamic Container（Web） |
 | 代码仓库 | <https://github.com/dez-eng/md5-vault> |
-| 容器镜像 | `ghcr.io/dez-eng/md5-vault:latest`（包设为 **public**，平台免配凭据即可拉取） |
+| 容器镜像 | `ghcr.io/dez-eng/keyvault:latest`（Actions 自动构建推送，包随仓库自动 public，平台免配凭据） |
 | 容器端口 | `80` |
 | Flag | 平台动态生成（**不要**在题目里填写静态 Flag）；Flag 模板按竞赛配置，如 `HuSec2026{[GUID]}` |
 | 环境变量注入 | GZCTF 会自动向容器注入 `GZCTF_FLAG`，`start.sh` 会读取它 |
 
-构建与推送（本机已登录 ghcr 时；日期 tag 按推送当天改）：
+镜像由 `.github/workflows/build-image.yml` 在 push 到 `main` 后自动构建推送，产出 `latest` 与
+`:YYYYMMDD` 两个 tag。本地手动构建：
 
 ```bash
 cd md5-vault
-docker build -t ghcr.io/dez-eng/md5-vault:latest -t ghcr.io/dez-eng/md5-vault:20261007 .
-docker push ghcr.io/dez-eng/md5-vault:latest
-docker push ghcr.io/dez-eng/md5-vault:20261007
+docker build -t ghcr.io/dez-eng/keyvault:latest .
 ```
+
+> 注意：**不要**先用个人 PAT 推同名包——那样包会归属个人账号，仓库里的 `GITHUB_TOKEN` 之后会推送失败
+> （报 `denied: permission_denied: read_package`），改包可见性也救不回来。让 Actions 来创建这个包即可。
 
 出题人自测须知：
 
