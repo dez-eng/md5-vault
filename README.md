@@ -64,6 +64,18 @@ if (!is_string($access) || !is_string($secret) || $access === '' || $secret === 
 干扰项/边界：无数据库、无文件包含、无其它可利用点，页面回显均已 `htmlspecialchars()` 转义，
 `robots.txt` 屏蔽 `/inc/` 与 `/audit.php` 只是氛围。
 
+### 输入面与运行时加固（审计后行为）
+
+- 接口只接受**表单与 URL 参数**（POST 优先），**Cookie 不作为输入源**。原因：`php:8.2-apache` 默认
+  不带 php.ini，缺省 `variables_order=EGPCS`，此时 `$_REQUEST` 会把 Cookie 也算进去（甚至可以覆盖
+  POST）。审计时实测过“只用 Cookie 提交也能通过对账”，所以 `audit.php` 改成了 `$_POST + $_GET`。
+- Dockerfile 启用了 `php.ini-production`（`display_errors=Off` 不让 warning 泄露路径、
+  `request_order=GP`），并用 `conf.d/zz-hardening.ini` 关掉 `expose_php`——production 模板里那行是
+  注释状态，内置默认是 On，不关会在响应头暴露 PHP 版本。
+- Apache 侧对 `/inc` 目录 `Require all denied`（直接请求返回 403），`Options -Indexes` 关闭目录列表。
+- `inc/common.php` 在既没有 `/flag` 又没有平台注入时返回 `KEYVAULT_FLAG_NOT_READY`（不是形似 flag 的
+  占位串），免得选手把占位符当答案提交。
+
 ### Dockerfile 里两个容易踩的坑
 
 1. **`php:8.2-apache` 自带 `/var/www/html/index.html`**，Debian 默认的 `DirectoryIndex` 把
@@ -128,16 +140,19 @@ docker logs md5_vault        # 看到 "[keyvault] Flag 已就绪（来源：FLAG
 | 配置项 | 值 |
 | --- | --- |
 | 挑战类型 | Dynamic Container（Web） |
-| 容器镜像 | 构建后推送的镜像，例如 `ghcr.io/<org>/md5-vault:latest` |
+| 代码仓库 | <https://github.com/dez-eng/md5-vault> |
+| 容器镜像 | `ghcr.io/dez-eng/md5-vault:latest`（包设为 **public**，平台免配凭据即可拉取） |
 | 容器端口 | `80` |
 | Flag | 平台动态生成（**不要**在题目里填写静态 Flag）；Flag 模板按竞赛配置，如 `HuSec2026{[GUID]}` |
 | 环境变量注入 | GZCTF 会自动向容器注入 `GZCTF_FLAG`，`start.sh` 会读取它 |
 
-推送镜像示例：
+构建与推送（本机已登录 ghcr 时；日期 tag 按推送当天改）：
 
 ```bash
-docker tag md5-vault:1.0 ghcr.io/<org>/md5-vault:latest
-docker push ghcr.io/<org>/md5-vault:latest
+cd md5-vault
+docker build -t ghcr.io/dez-eng/md5-vault:latest -t ghcr.io/dez-eng/md5-vault:20261007 .
+docker push ghcr.io/dez-eng/md5-vault:latest
+docker push ghcr.io/dez-eng/md5-vault:20261007
 ```
 
 出题人自测须知：
